@@ -3,6 +3,7 @@ library(shiny)
 library(bs4Dash)
 
 source("mod_airport_busyness.R")
+source("mod_flights_from_NY.R")
 
 shiny::shinyUI(
     bs4Dash::dashboardPage(
@@ -11,7 +12,10 @@ shiny::shinyUI(
         ),
         sidebar = bs4Dash::dashboardSidebar(),
         body = bs4Dash::dashboardBody(
-            airport_busyness_ui(id = "airport_busyness_1")
+            fluidRow(
+                airport_busyness_ui(id = "airport_busyness_1"),
+                flights_from_NY_ui(id = "flights_from_NY_1")
+            )
         ),
         controlbar = bs4Dash::dashboardControlbar(),
         title = "Take flight"
