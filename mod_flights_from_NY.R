@@ -10,6 +10,61 @@ flights_from_NY_ui <- function(id) {
 flights_from_NY_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     
+    world_map <- map_data("world")
+    
+    unique_flights <- reactive({
+      airport_coordinates <- airports[ , c("faa", "lat", "lon", "name")]
+      
+      unique_flights <- flights %>% 
+        distinct(origin, dest) %>% 
+        left_join(.,
+                  airport_coordinates,
+                  by = c("origin" = "faa")) %>% 
+        left_join(.,
+                  airport_coordinates,
+                  by = c("dest" = "faa"),
+                  suffix = c("_origin", "_dest"))
+      return(unique_flights)
+    })
+    
+    map_with_flights <- reactive({
+      req(unique_flights)
+      
+      ggplot(world_map) +
+        geom_polygon(aes(x = long, 
+                         y = lat, 
+                         group = group), 
+                     fill = "lightgrey", 
+                     color = "white") +
+        geom_point(aes(x = lon_dest, 
+                       y = lat_dest,
+                       color = origin,
+                       text = paste0(
+                         "Destination: ",
+                         name_dest,
+                         "\nOrigin: ",
+                         name_origin
+                       )), 
+                   data = unique_flights()) +
+        geom_point(aes(x = lon_origin,
+                       y = lat_origin,
+                       color = origin,
+                       text = paste0(
+                         "New York airport: ",
+                         name_origin
+                       )),
+                   data = unique_flights(),
+                   shape = "square") +
+        theme_void() +
+        theme(legend.position = "none") +
+        coord_cartesian(xlim = c(-180, -50), ylim = c(0, 80))
+    })
+    
+    output$flights_map_plot <- plotly::renderPlotly({
+      req(map_with_flights())
+      plotly::ggplotly(map_with_flights(), 
+                       tooltip = "text")  
+    })
     
   })
 }
