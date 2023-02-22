@@ -1,6 +1,7 @@
 
 library(shiny)
 library(bs4Dash)
+library(shinyWidgets)
 
 source("utils.R")
 source("mod_airport_busyness.R")
