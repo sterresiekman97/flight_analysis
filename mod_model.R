@@ -3,7 +3,9 @@ model_ui <- function(id) {
   ns <- NS(id)
   bs4Dash::box(
     title = "Factors affecting delays",
+    width = 12,
     textOutput(ns("variables")),
+    br(),
     uiOutput(ns("plots"))
   )
 }
@@ -56,13 +58,13 @@ model_server <- function(id) {
       
       plot_list <- purrr::map(delay_variables(),
                               function(variable) {
-                                tagList(
-                                  plotOutput(ns(variable)),
-                                  br()
+                                column(
+                                  width = 6,
+                                  plotOutput(ns(variable))
                                 )
                               })
       
-      do.call(tagList, plot_list)
+      do.call(fluidRow, plot_list)
     })
     
     
@@ -71,15 +73,30 @@ model_server <- function(id) {
       purrr::map(delay_variables(),
                  function(variable) {
                    output[[variable]] <- renderPlot({
-                     ggplot(flights[1:100, ]) +
-                       geom_point(aes(x = dep_time, y = sched_dep_time))
+                     
+                     if (is.numeric(for_random_forest()[[variable]])) {
+                       ggplot2::ggplot(for_random_forest()) +
+                         ggplot2::geom_point(ggplot2::aes(x = arr_delay,
+                                                          y = .data[[variable]]),
+                                             color = "red") +
+                         ggplot2::xlab("Arrival delay (minutes)") +
+                         ggplot2::theme_bw()
+                     } else {
+                       ggplot2::ggplot(for_random_forest()) +
+                         ggplot2::geom_boxplot(ggplot2::aes(y = arr_delay,
+                                                            x = as.factor(.data[[variable]]))) +
+                         ggplot2::ylab("Arrival delay (minutes)") +
+                         ggplot2::theme_bw()
+                     }
                    })
                  })
     })
     
     output$variables <- renderText({
       req(delay_variables())
-      delay_variables()
+      paste("The variable selection using random forests (VSURF) algorithm", 
+            "identified the following variables as affecting arrival delays:",
+            comma_and(delay_variables()))
     })
     
   })
