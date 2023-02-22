@@ -2,7 +2,7 @@
 airport_busyness_ui <- function(id) {
   ns <- NS(id)
   bs4Dash::box(
-    title = "Busyness of NY airports",
+    title = "Busyness of New York airports throughout the year",
     plotly::plotlyOutput(ns("busyness_plot"))
   )
 }
@@ -55,10 +55,10 @@ airport_busyness_server <- function(id) {
                                            # causing an error
                                            )) +
         ggplot2::geom_line() +
+        ggplot2::scale_color_discrete(name = "Airport") +
         ggplot2::theme_bw() +
-        ggplot2::ylab("Number of departing people") +
-        ggplot2::xlab("Date of departure") + 
-        ggplot2::guides(color = ggplot2::guide_legend(title = "Airport"))
+        ggplot2::ylab("Number of departing passengers") +
+        ggplot2::xlab("Date of departure")
     })
     
     output$busyness_plot <- plotly::renderPlotly({
@@ -66,6 +66,10 @@ airport_busyness_server <- function(id) {
       plotly::ggplotly(busyness_plot(),
                        tooltip = "text")
     })
+    
+    outputOptions(output, 
+                  "busyness_plot",
+                  priority = 2)
     
   })
 }
