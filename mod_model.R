@@ -26,7 +26,7 @@ model_server <- function(id) {
       # I only use a small subset of data because laptop is too slow:
       set.seed(123)
       small_dataset <- dplyr::sample_n(no_NAs,
-                                       size = 100)
+                                       size = 200)
       return(small_dataset)
     })
     
@@ -67,6 +67,9 @@ model_server <- function(id) {
       do.call(fluidRow, plot_list)
     })
     
+    outputOptions(output,
+                  "plots",
+                  priority = 0)
     
     observe({
       req(delay_variables())
@@ -90,7 +93,8 @@ model_server <- function(id) {
                      }
                    })
                  })
-    })
+    },
+    priority = 0)
     
     output$variables <- renderText({
       req(delay_variables())
@@ -98,6 +102,10 @@ model_server <- function(id) {
             "identified the following variables as affecting arrival delays:",
             comma_and(delay_variables()))
     })
+    
+    outputOptions(output,
+                  "variables",
+                  priority = 0)
     
   })
 }
